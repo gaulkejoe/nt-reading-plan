@@ -95,8 +95,16 @@
 <div class="container">
   <div class="hero">
     <div class="hero-icon">📖</div>
-    <h1>NT Chronological Reading Plan</h1>
-    <p>Acts to Revelation &mdash; read at your own pace</p>
+    <p style="font-size:11px;color:#9ca3af;letter-spacing:0.05em;margin-bottom:6px;">Created by Middle Cross Missions, Inc.</p>
+    <h1 id="mainTitle">NT Chronological Reading Plan</h1>
+    <p id="mainSubtitle">Acts to Revelation &mdash; read at your own pace</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;">
+      <span id="langEN" style="font-size:13px;font-weight:600;color:#7c3aed;">EN</span>
+      <div onclick="toggleLang()" style="width:44px;height:24px;background:#7c3aed;border-radius:99px;cursor:pointer;position:relative;flex-shrink:0;" id="langTrack">
+        <div id="langThumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform 0.2s;"></div>
+      </div>
+      <span id="langES" style="font-size:13px;font-weight:600;color:#9ca3af;">ES</span>
+    </div>
   </div>
 
   <div class="card">
@@ -179,10 +187,26 @@ const CHAPTERS = [
   {s:8,b:"Revelation",c:21},{s:8,b:"Revelation",c:22}
 ];
 
-const SECTION_LABELS = [
+const SECTION_LABELS_EN = [
   "⛪ Acts","📜 James","✉️ Galatians","✉️ Thessalonians",
   "✉️ Corinthians","✉️ Romans","⛓️ Prison epistles","📬 Pastoral epistles","👑 Revelation"
 ];
+const SECTION_LABELS_ES = [
+  "⛪ Hechos","📜 Santiago","✉️ Gálatas","✉️ Tesalonicenses",
+  "✉️ Corintios","✉️ Romanos","⛓️ Epístolas de prisión","📬 Epístolas pastorales","👑 Apocalipsis"
+];
+const BOOK_ES = {
+  "Acts":"Hechos","James":"Santiago","Galatians":"Gálatas",
+  "1 Thess":"1 Tes","2 Thess":"2 Tes",
+  "1 Cor":"1 Cor","2 Cor":"2 Cor",
+  "Romans":"Romanos","Ephesians":"Efesios","Philippians":"Filipenses",
+  "Colossians":"Colosenses","Philemon":"Filemón",
+  "1 Timothy":"1 Timoteo","2 Timothy":"2 Timoteo",
+  "Titus":"Tito","Hebrews":"Hebreos",
+  "1 Peter":"1 Pedro","2 Peter":"2 Pedro",
+  "1 John":"1 Juan","2 John":"2 Juan","3 John":"3 Juan",
+  "Jude":"Judas","Revelation":"Apocalipsis"
+};
 const PILL_CLASSES = ['s0','s1','s2','s3','s4','s5','s6','s7','s8'];
 const TAG_CLASSES  = ['pt-s0','pt-s1','pt-s2','pt-s3','pt-s4','pt-s5','pt-s6','pt-s7','pt-s8'];
 
@@ -190,6 +214,32 @@ const TOTAL = CHAPTERS.length;
 const STORAGE_KEY = 'nt_plan_checked';
 const DATE_KEY = 'nt_plan_start';
 const PACE_KEY = 'nt_plan_pace';
+const LANG_KEY = 'nt_plan_lang';
+
+let lang = 'en';
+try { lang = localStorage.getItem(LANG_KEY) || 'en'; } catch(e){}
+
+function getSectionLabels() { return lang === 'es' ? SECTION_LABELS_ES : SECTION_LABELS_EN; }
+
+function toggleLang() {
+  lang = lang === 'en' ? 'es' : 'en';
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  applyLang();
+  render();
+}
+
+function applyLang() {
+  const isES = lang === 'es';
+  document.getElementById('langThumb').style.transform = isES ? 'translateX(20px)' : 'translateX(0)';
+  document.getElementById('langEN').style.color = isES ? '#9ca3af' : '#7c3aed';
+  document.getElementById('langES').style.color = isES ? '#7c3aed' : '#9ca3af';
+  document.getElementById('mainTitle').textContent = isES
+    ? 'Plan de Lectura Cronológico del NT'
+    : 'NT Chronological Reading Plan';
+  document.getElementById('mainSubtitle').textContent = isES
+    ? 'Hechos al Apocalipsis — lee a tu propio ritmo'
+    : 'Acts to Revelation — read at your own pace';
+}
 
 let checked = {};
 try { checked = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); } catch(e){}
@@ -227,8 +277,10 @@ function fmtDate(d) { return d.toLocaleDateString('en-US',{month:'short',day:'nu
 function isToday(d) { const t=new Date(); return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate(); }
 function save() { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(checked));}catch(e){} }
 function chapterLabel(ch) {
-  if (ch.b==='Philemon'||ch.b==='2 John'||ch.b==='3 John'||ch.b==='Jude') return ch.b;
-  return ch.b+' '+ch.c;
+  const name = lang === 'es' ? (BOOK_ES[ch.b] || ch.b) : ch.b;
+  const noNum = ['Philemon','Filemón','2 John','2 Juan','3 John','3 Juan','Jude','Judas'];
+  if (noNum.includes(ch.b) || noNum.includes(name)) return name;
+  return name + ' ' + ch.c;
 }
 
 function render() {
@@ -256,7 +308,7 @@ function render() {
 
     if (!isRestDay && sectionIdx !== lastSection) {
       if (lastSection !== -1) html += '</div>';
-      html += `<div><div class="section-header"><span class="section-pill ${PILL_CLASSES[sectionIdx]}">${SECTION_LABELS[sectionIdx]}</span></div>`;
+      html += `<div><div class="section-header"><span class="section-pill ${PILL_CLASSES[sectionIdx]}">${getSectionLabels()[sectionIdx]}</span></div>`;
       lastSection = sectionIdx;
     }
 
@@ -296,7 +348,7 @@ function toggle(idx, val) {
       row.querySelectorAll('.passage-tag').forEach(t => { t.className='passage-tag'; });
       const tb = row.querySelector('.today-badge');
       if (tb) tb.remove();
-      launchFireworks(row);
+      launchFireworks();
     } else {
       row.classList.remove('done');
       const icon = row.querySelector('.done-icon');
@@ -313,7 +365,7 @@ function toggle(idx, val) {
   save();
 }
 
-function launchFireworks(row) {
+function launchFireworks() {
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
 
@@ -532,6 +584,7 @@ function resetAll() {
   render();
 }
 
+applyLang();
 render();
 </script>
 </body>
