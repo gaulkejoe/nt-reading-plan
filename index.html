@@ -296,6 +296,7 @@ function toggle(idx, val) {
       row.querySelectorAll('.passage-tag').forEach(t => { t.className='passage-tag'; });
       const tb = row.querySelector('.today-badge');
       if (tb) tb.remove();
+      launchFireworks(row);
     } else {
       row.classList.remove('done');
       const icon = row.querySelector('.done-icon');
@@ -310,6 +311,209 @@ function toggle(idx, val) {
   }
   updateStats(parseInt(paceSlider.value));
   save();
+}
+
+function launchFireworks(row) {
+  const rect = row.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  let canvas = document.getElementById('fw-canvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.id = 'fw-canvas';
+    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+    document.body.appendChild(canvas);
+  }
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  const COLORS = [
+    ['#ff4d4d','#ff9999'],['#ff9900','#ffcc66'],['#ffff00','#ffffaa'],
+    ['#00ff88','#99ffcc'],['#00ccff','#99eeff'],['#aa44ff','#dd99ff'],
+    ['#ff44cc','#ffaaee'],['#ffffff','#ddddff']
+  ];
+
+  class Particle {
+    constructor(x, y, angle, speed, color, trailColor) {
+      this.x = x; this.y = y;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.alpha = 1;
+      this.color = color;
+      this.trailColor = trailColor;
+      this.trail = [];
+      this.gravity = 0.045;
+      this.decay = 0.006 + Math.random() * 0.004;
+      this.size = 2.5 + Math.random() * 1.5;
+    }
+    update() {
+      this.trail.push({x: this.x, y: this.y, a: this.alpha});
+      if (this.trail.length > 12) this.trail.shift();
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vy += this.gravity;
+      this.vx *= 0.98;
+      this.alpha -= this.decay;
+    }
+    draw(ctx) {
+      for (let i = 0; i < this.trail.length; i++) {
+        const t = this.trail[i];
+        const ratio = i / this.trail.length;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, this.size * ratio * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = this.trailColor;
+        ctx.globalAlpha = t.a * ratio * 0.4;
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.fill();
+      // bright core
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = this.alpha * 0.8;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    isDead() { return this.alpha <= 0; }
+  }
+
+  class Shell {
+    constructor(tx, ty, delay) {
+      this.startX = cx;
+      this.startY = cy;
+      this.tx = tx; this.ty = ty;
+      this.x = cx; this.y = cy;
+      this.delay = delay;
+      this.launched = false;
+      this.exploded = false;
+      this.trail = [];
+      const dx = tx - cx, dy = ty - cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      this.vx = dx / 45;
+      this.vy = dy / 45;
+      this.alpha = 1;
+      this.timer = 0;
+      this.travelTime = 45;
+    }
+    update(particles) {
+      if (this.delay > 0) { this.delay--; return; }
+      if (this.exploded) return;
+      this.launched = true;
+      this.trail.push({x: this.x, y: this.y});
+      if (this.trail.length > 8) this.trail.shift();
+      this.x += this.vx;
+      this.y += this.vy;
+      this.timer++;
+      if (this.timer >= this.travelTime) {
+        this.exploded = true;
+        this.explode(particles);
+      }
+    }
+    explode(particles) {
+      const pair = COLORS[Math.floor(Math.random() * COLORS.length)];
+      const count = 90 + Math.floor(Math.random() * 40);
+      const speed = 2.0 + Math.random() * 1.5;
+      // main burst
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count;
+        const s = speed * (0.7 + Math.random() * 0.6);
+        particles.push(new Particle(this.x, this.y, angle, s, pair[0], pair[1]));
+      }
+      // inner sparkle ring
+      for (let i = 0; i < 30; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const s = speed * 0.3 * Math.random();
+        particles.push(new Particle(this.x, this.y, angle, s, '#ffffff', '#ffffcc'));
+      }
+    }
+    draw(ctx) {
+      if (!this.launched || this.exploded) return;
+      for (let i = 0; i < this.trail.length; i++) {
+        const t = this.trail[i];
+        const ratio = i / this.trail.length;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 2 * ratio, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffcc66';
+        ctx.globalAlpha = ratio * 0.6;
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = 1;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    isDone() { return this.exploded; }
+  }
+
+  const particles = [];
+  const shells = [];
+  const offsets = [
+    [0, 0, 0],
+    [-120, -80, 8],
+    [120, -60, 16],
+    [-60, -120, 24],
+    [60, -100, 32]
+  ];
+  offsets.forEach(([dx, dy, delay]) => {
+    shells.push(new Shell(cx + dx, cy + dy - 60, delay));
+  });
+
+  // Floating thumbs up emojis
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => {
+      const thumb = document.createElement('div');
+      const startX = cx + (-140 + Math.random() * 280);
+      const startY = cy + (10 + Math.random() * 30);
+      const size = 18 + Math.random() * 16;
+      thumb.textContent = '👍';
+      thumb.style.cssText = `position:fixed;left:${startX}px;top:${startY}px;font-size:${size}px;pointer-events:none;z-index:10000;transform:translate(-50%,-50%);user-select:none;`;
+      document.body.appendChild(thumb);
+      let start = null;
+      const duration = 1800 + Math.random() * 800;
+      const floatX = (Math.random() - 0.5) * 80;
+      const floatY = -(180 + Math.random() * 120);
+      function animThumb(ts) {
+        if (!start) start = ts;
+        const p = (ts - start) / duration;
+        if (p >= 1) { thumb.remove(); return; }
+        const ease = p < 0.2 ? p / 0.2 : 1;
+        const fade = p > 0.6 ? 1 - (p - 0.6) / 0.4 : 1;
+        thumb.style.left = (startX + floatX * p) + 'px';
+        thumb.style.top = (startY + floatY * p) + 'px';
+        thumb.style.opacity = ease * fade;
+        thumb.style.transform = `translate(-50%,-50%) scale(${0.5 + ease * 0.5}) rotate(${Math.sin(p * Math.PI * 3) * 15}deg)`;
+        requestAnimationFrame(animThumb);
+      }
+      requestAnimationFrame(animThumb);
+    }, i * 130 + Math.random() * 150);
+  }
+
+  let animId;
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    shells.forEach(s => { s.update(particles); s.draw(ctx); });
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw(ctx);
+      if (particles[i].isDead()) particles.splice(i, 1);
+    }
+    const allShellsDone = shells.every(s => s.isDone());
+    if (allShellsDone && particles.length === 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      cancelAnimationFrame(animId);
+      return;
+    }
+    animId = requestAnimationFrame(loop);
+  }
+  animId = requestAnimationFrame(loop);
 }
 
 function updateStats(total) {
