@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NT Reading Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #ffffff; color: #111827; padding: 1.5rem 1rem; }
+  .container { max-width: 640px; margin: 0 auto; }
+
+  .hero { text-align: center; padding: 1.5rem 0 1.25rem; }
+  .hero-icon { font-size: 48px; margin-bottom: 8px; }
+  .hero h1 { font-size: 22px; font-weight: 600; background: linear-gradient(90deg, #7c3aed, #0ea5e9, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px; }
+  .hero p { font-size: 14px; color: #9ca3af; }
+
+  .card { background: #f9fafb; border-radius: 14px; padding: 16px; border: 1px solid #e5e7eb; margin-bottom: 1rem; }
+
+  .pace-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .pace-row label { font-size: 14px; color: #6b7280; white-space: nowrap; }
+  .pace-row input[type="range"] { flex: 1; accent-color: #7c3aed; }
+  .pace-badge { font-size: 14px; font-weight: 600; color: #7c3aed; background: #ede9fe; padding: 4px 12px; border-radius: 99px; white-space: nowrap; min-width: 80px; text-align: center; border: 1px solid #c4b5fd; }
+  .pace-desc { font-size: 13px; color: #9ca3af; text-align: center; }
+  .pace-desc strong { color: #0ea5e9; }
+
+  .date-row { display: flex; align-items: center; gap: 10px; }
+  .date-row label { font-size: 14px; color: #6b7280; }
+  .date-row input[type="date"] { font-size: 14px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #111827; flex: 1; }
+  .date-row button { font-size: 13px; padding: 6px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer; color: #9ca3af; }
+  .date-row button:hover { background: #f3f4f6; color: #6b7280; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+  .stat { border-radius: 12px; padding: 14px; text-align: center; }
+  .stat-0 { background: #ede9fe; border: 1px solid #c4b5fd; }
+  .stat-1 { background: #e0f2fe; border: 1px solid #7dd3fc; }
+  .stat-2 { background: #d1fae5; border: 1px solid #6ee7b7; }
+  .stat-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+  .stat-0 .stat-val { color: #7c3aed; }
+  .stat-1 .stat-val { color: #0284c7; }
+  .stat-2 .stat-val { color: #059669; }
+
+  .progress-wrap { margin-bottom: 1.5rem; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #9ca3af; margin-bottom: 6px; }
+  .progress-bg { height: 8px; background: #f3f4f6; border-radius: 99px; overflow: hidden; border: 1px solid #e5e7eb; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #7c3aed, #0ea5e9, #10b981); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section-header { padding: 14px 0 6px; }
+  .section-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
+  .s0 { background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; }
+  .s1 { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+  .s2 { background: #fae8ff; color: #9333ea; border: 1px solid #e879f9; }
+  .s3 { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .s4 { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+  .s5 { background: #fce7f3; color: #be185d; border: 1px solid #f9a8d4; }
+  .s6 { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .s7 { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+  .s8 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+  .day-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border-radius: 10px; margin-bottom: 3px; background: #fff; border: 1px solid #f3f4f6; transition: border-color 0.15s, background 0.15s; }
+  .day-row:hover { background: #faf5ff; border-color: #c4b5fd; }
+  .day-row.done { background: #f9fafb; border-color: #f3f4f6; }
+  .day-num { font-size: 11px; color: #d1d5db; min-width: 36px; padding-top: 2px; }
+  .day-date { font-size: 12px; color: #9ca3af; min-width: 62px; padding-top: 2px; }
+  .day-content { flex: 1; }
+  .day-passages { font-size: 14px; color: #374151; line-height: 1.7; }
+  .day-row.done .day-passages { color: #d1d5db; text-decoration: line-through; }
+  .day-row.done .day-date { color: #e5e7eb; }
+
+  .passage-tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 6px; margin: 2px 3px 2px 0; }
+  .pt-s0 { background: #ede9fe; color: #6d28d9; }
+  .pt-s1 { background: #e0f2fe; color: #0369a1; }
+  .pt-s2 { background: #fae8ff; color: #9333ea; }
+  .pt-s3 { background: #d1fae5; color: #065f46; }
+  .pt-s4 { background: #dbeafe; color: #1d4ed8; }
+  .pt-s5 { background: #fce7f3; color: #be185d; }
+  .pt-s6 { background: #dcfce7; color: #15803d; }
+  .pt-s7 { background: #ffedd5; color: #c2410c; }
+  .pt-s8 { background: #fee2e2; color: #b91c1c; }
+  .day-row.done .passage-tag { background: #f3f4f6; color: #d1d5db; }
+
+  .today-badge { font-size: 11px; padding: 3px 9px; border-radius: 99px; background: #ede9fe; color: #6d28d9; font-weight: 600; border: 1px solid #c4b5fd; white-space: nowrap; margin-top: 4px; display: inline-block; }
+  .done-icon { font-size: 16px; padding-top: 1px; flex-shrink: 0; }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: #7c3aed; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+
+  .congrats { display: none; text-align: center; padding: 2rem 1rem; background: #faf5ff; border: 1px solid #c4b5fd; border-radius: 16px; margin-top: 1rem; }
+  .congrats.show { display: block; }
+  .congrats p { font-size: 18px; font-weight: 600; background: linear-gradient(90deg,#7c3aed,#0ea5e9,#10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom: 6px; }
+  .congrats small { font-size: 14px; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <div class="hero-icon">📖</div>
+    <h1>NT Chronological Reading Plan</h1>
+    <p>Acts to Revelation &mdash; read at your own pace</p>
+  </div>
+
+  <div class="card">
+    <div class="pace-row">
+      <label>⚡ Pace</label>
+      <input type="range" id="paceSlider" min="30" max="90" step="1" value="65" />
+      <div class="pace-badge" id="paceBadge">65 days</div>
+    </div>
+    <div class="pace-desc" id="paceDesc"></div>
+  </div>
+
+  <div class="card">
+    <div class="date-row">
+      <label>📅 Start</label>
+      <input type="date" id="startDate" />
+      <button onclick="resetAll()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat stat-0"><div class="stat-label">✅ Completed</div><div class="stat-val" id="statDone">0</div></div>
+    <div class="stat stat-1"><div class="stat-label">📚 Remaining</div><div class="stat-val" id="statLeft">0</div></div>
+    <div class="stat stat-2"><div class="stat-label">🔥 Complete</div><div class="stat-val" id="statPct">0%</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Progress</span><span id="progLabel">–</span></div>
+    <div class="progress-bg"><div class="progress-fill" id="progBar" style="width:0%"></div></div>
+  </div>
+
+  <div id="planList"></div>
+
+  <div class="congrats" id="congrats">
+    <p>🎉 You finished the plan!</p>
+    <small>Well done, good and faithful servant.</small>
+  </div>
+</div>
+
+<script>
+const CHAPTERS = [
+  {s:0,b:"Acts",c:1},{s:0,b:"Acts",c:2},{s:0,b:"Acts",c:3},{s:0,b:"Acts",c:4},{s:0,b:"Acts",c:5},
+  {s:0,b:"Acts",c:6},{s:0,b:"Acts",c:7},{s:0,b:"Acts",c:8},{s:0,b:"Acts",c:9},{s:0,b:"Acts",c:10},
+  {s:0,b:"Acts",c:11},{s:0,b:"Acts",c:12},
+  {s:1,b:"James",c:1},{s:1,b:"James",c:2},{s:1,b:"James",c:3},{s:1,b:"James",c:4},{s:1,b:"James",c:5},
+  {s:0,b:"Acts",c:13},{s:0,b:"Acts",c:14},{s:0,b:"Acts",c:15},{s:0,b:"Acts",c:16},
+  {s:2,b:"Galatians",c:1},{s:2,b:"Galatians",c:2},{s:2,b:"Galatians",c:3},{s:2,b:"Galatians",c:4},{s:2,b:"Galatians",c:5},{s:2,b:"Galatians",c:6},
+  {s:0,b:"Acts",c:17},{s:0,b:"Acts",c:18},
+  {s:3,b:"1 Thess",c:1},{s:3,b:"1 Thess",c:2},{s:3,b:"1 Thess",c:3},{s:3,b:"1 Thess",c:4},{s:3,b:"1 Thess",c:5},
+  {s:3,b:"2 Thess",c:1},{s:3,b:"2 Thess",c:2},{s:3,b:"2 Thess",c:3},
+  {s:0,b:"Acts",c:19},
+  {s:4,b:"1 Cor",c:1},{s:4,b:"1 Cor",c:2},{s:4,b:"1 Cor",c:3},{s:4,b:"1 Cor",c:4},{s:4,b:"1 Cor",c:5},
+  {s:4,b:"1 Cor",c:6},{s:4,b:"1 Cor",c:7},{s:4,b:"1 Cor",c:8},{s:4,b:"1 Cor",c:9},{s:4,b:"1 Cor",c:10},
+  {s:4,b:"1 Cor",c:11},{s:4,b:"1 Cor",c:12},{s:4,b:"1 Cor",c:13},{s:4,b:"1 Cor",c:14},{s:4,b:"1 Cor",c:15},{s:4,b:"1 Cor",c:16},
+  {s:4,b:"2 Cor",c:1},{s:4,b:"2 Cor",c:2},{s:4,b:"2 Cor",c:3},{s:4,b:"2 Cor",c:4},{s:4,b:"2 Cor",c:5},
+  {s:4,b:"2 Cor",c:6},{s:4,b:"2 Cor",c:7},{s:4,b:"2 Cor",c:8},{s:4,b:"2 Cor",c:9},{s:4,b:"2 Cor",c:10},
+  {s:4,b:"2 Cor",c:11},{s:4,b:"2 Cor",c:12},{s:4,b:"2 Cor",c:13},
+  {s:5,b:"Romans",c:1},{s:5,b:"Romans",c:2},{s:5,b:"Romans",c:3},{s:5,b:"Romans",c:4},{s:5,b:"Romans",c:5},
+  {s:5,b:"Romans",c:6},{s:5,b:"Romans",c:7},{s:5,b:"Romans",c:8},{s:5,b:"Romans",c:9},{s:5,b:"Romans",c:10},
+  {s:5,b:"Romans",c:11},{s:5,b:"Romans",c:12},{s:5,b:"Romans",c:13},{s:5,b:"Romans",c:14},{s:5,b:"Romans",c:15},{s:5,b:"Romans",c:16},
+  {s:0,b:"Acts",c:20},{s:0,b:"Acts",c:21},{s:0,b:"Acts",c:22},{s:0,b:"Acts",c:23},{s:0,b:"Acts",c:24},
+  {s:0,b:"Acts",c:25},{s:0,b:"Acts",c:26},{s:0,b:"Acts",c:27},{s:0,b:"Acts",c:28},
+  {s:6,b:"Ephesians",c:1},{s:6,b:"Ephesians",c:2},{s:6,b:"Ephesians",c:3},{s:6,b:"Ephesians",c:4},{s:6,b:"Ephesians",c:5},{s:6,b:"Ephesians",c:6},
+  {s:6,b:"Philippians",c:1},{s:6,b:"Philippians",c:2},{s:6,b:"Philippians",c:3},{s:6,b:"Philippians",c:4},
+  {s:6,b:"Colossians",c:1},{s:6,b:"Colossians",c:2},{s:6,b:"Colossians",c:3},{s:6,b:"Colossians",c:4},
+  {s:6,b:"Philemon",c:1},
+  {s:7,b:"1 Timothy",c:1},{s:7,b:"1 Timothy",c:2},{s:7,b:"1 Timothy",c:3},{s:7,b:"1 Timothy",c:4},{s:7,b:"1 Timothy",c:5},{s:7,b:"1 Timothy",c:6},
+  {s:7,b:"Titus",c:1},{s:7,b:"Titus",c:2},{s:7,b:"Titus",c:3},
+  {s:7,b:"Hebrews",c:1},{s:7,b:"Hebrews",c:2},{s:7,b:"Hebrews",c:3},{s:7,b:"Hebrews",c:4},{s:7,b:"Hebrews",c:5},
+  {s:7,b:"Hebrews",c:6},{s:7,b:"Hebrews",c:7},{s:7,b:"Hebrews",c:8},{s:7,b:"Hebrews",c:9},{s:7,b:"Hebrews",c:10},
+  {s:7,b:"Hebrews",c:11},{s:7,b:"Hebrews",c:12},{s:7,b:"Hebrews",c:13},
+  {s:7,b:"1 Peter",c:1},{s:7,b:"1 Peter",c:2},{s:7,b:"1 Peter",c:3},{s:7,b:"1 Peter",c:4},{s:7,b:"1 Peter",c:5},
+  {s:7,b:"2 Peter",c:1},{s:7,b:"2 Peter",c:2},{s:7,b:"2 Peter",c:3},
+  {s:7,b:"2 Timothy",c:1},{s:7,b:"2 Timothy",c:2},{s:7,b:"2 Timothy",c:3},{s:7,b:"2 Timothy",c:4},
+  {s:7,b:"1 John",c:1},{s:7,b:"1 John",c:2},{s:7,b:"1 John",c:3},{s:7,b:"1 John",c:4},{s:7,b:"1 John",c:5},
+  {s:7,b:"2 John",c:1},{s:7,b:"3 John",c:1},{s:7,b:"Jude",c:1},
+  {s:8,b:"Revelation",c:1},{s:8,b:"Revelation",c:2},{s:8,b:"Revelation",c:3},{s:8,b:"Revelation",c:4},{s:8,b:"Revelation",c:5},
+  {s:8,b:"Revelation",c:6},{s:8,b:"Revelation",c:7},{s:8,b:"Revelation",c:8},{s:8,b:"Revelation",c:9},{s:8,b:"Revelation",c:10},
+  {s:8,b:"Revelation",c:11},{s:8,b:"Revelation",c:12},{s:8,b:"Revelation",c:13},{s:8,b:"Revelation",c:14},{s:8,b:"Revelation",c:15},
+  {s:8,b:"Revelation",c:16},{s:8,b:"Revelation",c:17},{s:8,b:"Revelation",c:18},{s:8,b:"Revelation",c:19},{s:8,b:"Revelation",c:20},
+  {s:8,b:"Revelation",c:21},{s:8,b:"Revelation",c:22}
+];
+
+const SECTION_LABELS = [
+  "⛪ Acts","📜 James","✉️ Galatians","✉️ Thessalonians",
+  "✉️ Corinthians","✉️ Romans","⛓️ Prison epistles","📬 Pastoral epistles","👑 Revelation"
+];
+const PILL_CLASSES = ['s0','s1','s2','s3','s4','s5','s6','s7','s8'];
+const TAG_CLASSES  = ['pt-s0','pt-s1','pt-s2','pt-s3','pt-s4','pt-s5','pt-s6','pt-s7','pt-s8'];
+
+const TOTAL = CHAPTERS.length;
+const STORAGE_KEY = 'nt_plan_checked';
+const DATE_KEY = 'nt_plan_start';
+const PACE_KEY = 'nt_plan_pace';
+
+let checked = {};
+try { checked = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); } catch(e){}
+
+const dateInput = document.getElementById('startDate');
+const paceSlider = document.getElementById('paceSlider');
+
+const savedDate = (() => { try { return localStorage.getItem(DATE_KEY)||''; } catch(e){return '';} })();
+const savedPace = (() => { try { const v=parseInt(localStorage.getItem(PACE_KEY)||'65'); return Math.min(90,Math.max(30,v)); } catch(e){return 65;} })();
+
+dateInput.value = savedDate || new Date().toISOString().split('T')[0];
+paceSlider.value = savedPace;
+
+dateInput.addEventListener('change', () => { try{localStorage.setItem(DATE_KEY,dateInput.value);}catch(e){} render(); });
+paceSlider.addEventListener('input', () => { try{localStorage.setItem(PACE_KEY,paceSlider.value);}catch(e){} render(); });
+
+function buildDays(numDays) {
+  const days = [];
+  for (let d=0; d<numDays; d++) {
+    const start = Math.round(d * TOTAL / numDays);
+    const end   = Math.round((d+1) * TOTAL / numDays);
+    days.push(CHAPTERS.slice(start, end));
+  }
+  return days;
+}
+
+function getStartDate() {
+  const v = dateInput.value;
+  if (!v) return null;
+  const [y,m,d] = v.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+function addDays(date,n) { const d=new Date(date); d.setDate(d.getDate()+n); return d; }
+function fmtDate(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function isToday(d) { const t=new Date(); return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate(); }
+function save() { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(checked));}catch(e){} }
+function chapterLabel(ch) {
+  if (ch.b==='Philemon'||ch.b==='2 John'||ch.b==='3 John'||ch.b==='Jude') return ch.b;
+  return ch.b+' '+ch.c;
+}
+
+function render() {
+  const numDays = parseInt(paceSlider.value);
+  const days = buildDays(numDays);
+  const start = getStartDate();
+
+  document.getElementById('paceBadge').textContent = numDays+' days';
+  const avg = (TOTAL/numDays).toFixed(1);
+  const endDate = start ? addDays(start, numDays-1) : null;
+  document.getElementById('paceDesc').innerHTML = endDate
+    ? `~${avg} chapters/day &mdash; finish by <strong>${fmtDate(endDate)}</strong>`
+    : `~${avg} chapters per day`;
+
+  let html = '';
+  let lastSection = -1;
+
+  days.forEach((dayChapters, di) => {
+    const key = 'day_'+di;
+    const done = !!checked[key];
+    const date = start ? addDays(start, di) : null;
+    const today = date ? isToday(date) : false;
+    const isRestDay = dayChapters.length === 0;
+    const sectionIdx = isRestDay ? lastSection : dayChapters[0].s;
+
+    if (!isRestDay && sectionIdx !== lastSection) {
+      if (lastSection !== -1) html += '</div>';
+      html += `<div><div class="section-header"><span class="section-pill ${PILL_CLASSES[sectionIdx]}">${SECTION_LABELS[sectionIdx]}</span></div>`;
+      lastSection = sectionIdx;
+    }
+
+    const tagsHtml = isRestDay
+      ? `<span style="font-size:13px;color:#d1d5db;font-style:italic;">Rest day 🌿</span>`
+      : dayChapters.map(ch => `<span class="passage-tag ${done?'':TAG_CLASSES[ch.s]}">${chapterLabel(ch)}</span>`).join('');
+
+    html += `<div class="day-row${done?' done':''}" id="row_${di}">
+      <input type="checkbox" ${done?'checked':''} onchange="toggle(${di},this.checked)" />
+      <span class="day-num">Day ${di+1}</span>
+      ${date?`<span class="day-date">${fmtDate(date)}</span>`:''}
+      <div class="day-content">
+        <div class="day-passages">${tagsHtml}</div>
+        ${today&&!done?'<span class="today-badge">Today ✨</span>':''}
+      </div>
+      ${done?'<span class="done-icon">✅</span>':''}
+    </div>`;
+  });
+
+  if (lastSection !== -1) html += '</div>';
+  document.getElementById('planList').innerHTML = html;
+  updateStats(numDays);
+}
+
+function toggle(idx, val) {
+  checked['day_'+idx] = val;
+  const row = document.getElementById('row_'+idx);
+  if (row) {
+    if (val) {
+      row.classList.add('done');
+      if (!row.querySelector('.done-icon')) {
+        const icon = document.createElement('span');
+        icon.className = 'done-icon';
+        icon.textContent = '✅';
+        row.appendChild(icon);
+      }
+      row.querySelectorAll('.passage-tag').forEach(t => { t.className='passage-tag'; });
+      const tb = row.querySelector('.today-badge');
+      if (tb) tb.remove();
+    } else {
+      row.classList.remove('done');
+      const icon = row.querySelector('.done-icon');
+      if (icon) icon.remove();
+      const numDays = parseInt(paceSlider.value);
+      const days = buildDays(numDays);
+      const dayChapters = days[idx] || [];
+      row.querySelectorAll('.passage-tag').forEach((t,i) => {
+        if (dayChapters[i]) t.className='passage-tag '+TAG_CLASSES[dayChapters[i].s];
+      });
+    }
+  }
+  updateStats(parseInt(paceSlider.value));
+  save();
+}
+
+function updateStats(total) {
+  const done = Object.keys(checked).filter(k=>checked[k]&&parseInt(k.replace('day_',''))<total).length;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statLeft').textContent = total-done;
+  document.getElementById('statPct').textContent = Math.round(done/total*100)+'%';
+  document.getElementById('progBar').style.width = Math.round(done/total*100)+'%';
+  document.getElementById('progLabel').textContent = done+' of '+total+' days';
+  document.getElementById('congrats').classList.toggle('show', done===total);
+}
+
+function resetAll() {
+  if (!confirm('Reset all progress?')) return;
+  checked = {};
+  save();
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
